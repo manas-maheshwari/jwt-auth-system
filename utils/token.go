@@ -1,24 +1,21 @@
 package utils
 
 import (
+	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var jwtKey = []byte("your_secret_key")
+var jwtKey = []byte("o+z1T6XoN4Z9PsThZYBxgkH/kqMIqBaFSD4r7Be+E7I=")
 
-// Define Claims struct to implement jwt.Claims
 type Claims struct {
 	Username string `json:"username"`
 	jwt.RegisteredClaims
 }
 
-// GenerateJWT generates a new JWT token
 func GenerateJWT(username string) (string, error) {
-	expirationTime := time.Now().Add(24 * time.Hour)
-
-	// Create the Claims, which includes the username and expiry time
+	expirationTime := time.Now().Add(30 * time.Minute)
 	claims := &Claims{
 		Username: username,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -26,32 +23,33 @@ func GenerateJWT(username string) (string, error) {
 		},
 	}
 
-	// Create token with HS256 signing method
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(jwtKey)
+	if err != nil {
+		return "", err
+	}
 
-	// Sign the token with the secret key and return it
-	return token.SignedString(jwtKey)
+	return tokenString, nil
 }
 
-// ValidateJWT parses and validates the JWT token
-func ValidateJWT(tokenStr string) (*Claims, error) {
+// ValidateJWT validates the token and returns claims
+func ValidateJWT(tokenString string) (*Claims, error) {
 	claims := &Claims{}
-
-	// Parse the token with the claims struct
-	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		// Ensure the token's signing method is what you expect
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
 		return jwtKey, nil
 	})
 
 	if err != nil {
-		if err == jwt.ErrSignatureInvalid {
-			return nil, err
-		}
 		return nil, err
 	}
 
-	// Ensure the token is valid
+	// Check if the token is valid
 	if !token.Valid {
-		return nil, jwt.ErrSignatureInvalid
+		return nil, errors.New("invalid token")
 	}
 
 	return claims, nil

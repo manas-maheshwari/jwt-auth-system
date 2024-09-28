@@ -1,17 +1,26 @@
 package main
 
 import (
-    "github.com/gin-gonic/gin"
-    "jwt-auth-system/controllers"
+	"jwt-auth-system/controllers"
+	"jwt-auth-system/middleware"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-    router := gin.Default()
+	r := gin.Default()
 
-    router.POST("/login", controllers.Login)
-    router.POST("/register", controllers.Register)
+	// Public routes
+	r.POST("/register", controllers.Register)
+	r.POST("/login", controllers.Login)
 
-    // Protect routes using middleware here
+	// Protected routes
+	protected := r.Group("/api")
+	protected.Use(middleware.AuthMiddleware())
+	protected.GET("/dashboard", func(c *gin.Context) {
+		username := c.MustGet("username").(string)
+		c.JSON(200, gin.H{"message": "Welcome to the dashboard, " + username})
+	})
 
-    router.Run(":8080")
+	r.Run(":8080") // Start the server on port 8080
 }

@@ -160,4 +160,4 @@ go test ./...
 ```
 
 ## License
-Patent Pending B)
+This project is licensed under the MIT License.

@@ -1,7 +1,3 @@
-Sure! Here's a sample README for your project:
-
----
-
 # JWT Authentication System
 
 This project is a basic JWT-based authentication system built using the **Go** programming language and **Gin** web framework. It includes endpoints for user registration and login, secured routes that require authentication, and token validation using **JSON Web Tokens (JWT)**. 

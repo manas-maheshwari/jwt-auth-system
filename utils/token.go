@@ -2,12 +2,29 @@ package utils
 
 import (
 	"errors"
+	"log"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
 )
 
-var jwtKey = []byte("o+z1T6XoN4Z9PsThZYBxgkH/kqMIqBaFSD4r7Be+E7I=")
+var jwtKey []byte
+
+func init() {
+	// Load the .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	// Get the JWT_SECRET from the environment
+	jwtKey = []byte(os.Getenv("JWT_SECRET_KEY"))
+	if len(jwtKey) == 0 {
+		log.Fatal("JWT_SECRET environment variable is required")
+	}
+}
 
 type Claims struct {
 	Username string `json:"username"`
